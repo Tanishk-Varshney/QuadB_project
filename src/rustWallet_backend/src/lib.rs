@@ -1,46 +1,49 @@
-use ic_cdk::api::caller;
-use ic_cdk::export::Principal;
-use ic_cdk::storage::{stable, Stable};
-use ic_cdk_macros::*;
+use ic_cdk_macros::{init, update, query};  
+use candid::{CandidType, Principal};  // Corrected import for Principal and CandidType
+use serde::{Serialize, Deserialize};  // Serde for serialization
 
-#[derive(Default, Stable)]
-pub struct Token {
-    pub balances: std::collections::HashMap<Principal, u64>,
+use bincode;  
+use ic_cdk::storage;  // Use ic_cdk's stable memory API
+
+#[derive(CandidType, Serialize, Deserialize)]  // Ensure both traits are derived
+struct Token {
+    id: u32,
+    owner: Principal,
+    balance: u64,
 }
 
+// Initialize the token in stable memory
 #[init]
 fn init() {
-    let mut token = Token::default();
-    token.balances.insert(caller(), 1_000_000); // Initial supply
-    stable_save((token,)).unwrap();
+    let token = Token {
+        id: 1,
+        owner: ic_cdk::caller(),  // Set the initial owner to the caller of the init function
+        balance: 1000,  // Initial balance
+    };
+
+    // Serialize and write to stable memory
+    let serialized = bincode::serialize(&token).unwrap();
+    storage::stable_save((serialized,)).unwrap();
 }
 
 #[update]
-fn transfer(to: Principal, amount: u64) -> Result<(), String> {
-    let (token,) = stable_restore().unwrap();
-    let from = caller();
+fn update_token(new_balance: u64) {
+    let mut token: Token = load_token();
+    token.balance = new_balance;  // Update balance
 
-    if let Some(balance) = token.balances.get_mut(&from) {
-        if *balance < amount {
-            return Err("Insufficient funds".to_string());
-        }
-        *balance -= amount;
-        *token.balances.entry(to).or_insert(0) += amount;
-        stable_save((token,)).unwrap();
-        Ok(())
-    } else {
-        Err("Sender does not have an account".to_string())
-    }
+    // Serialize and save the updated token to memory
+    let serialized = bincode::serialize(&token).unwrap();
+    storage::stable_save((serialized,)).unwrap();
 }
 
+// Query function to read token details
 #[query]
-fn balance_of(account: Principal) -> u64 {
-    let (token,) = stable_restore().unwrap();
-    *token.balances.get(&account).unwrap_or(&0)
+fn read_token() -> Token {
+    load_token()  // Return the loaded token
 }
 
-#[query]
-fn total_supply() -> u64 {
-    let (token,) = stable_restore().unwrap();
-    token.balances.values().sum()
+// Helper function to load token from stable memory
+fn load_token() -> Token {
+    let (buf,): (Vec<u8>,) = storage::stable_restore().unwrap();
+    bincode::deserialize(&buf).unwrap()  // Deserialize and return the token
 }

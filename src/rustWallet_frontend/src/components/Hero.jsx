@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import heroImg from "../assets/hacler.png";
+import heroImg from "../assets/wallet.png";
 import { Actor, HttpAgent } from "@dfinity/agent";
 import { LedgerCanister } from "@dfinity/ledger-icp";
 import { Principal } from "@dfinity/principal";
@@ -104,12 +104,12 @@ const Hero = () => {
           </span>
         </h4>
         <h3 className="text-[#fff]">
-          A Rust-based Crypto Wallet Deployed on ICP
+          A Blockchain Crypto Wallet Using Rust & ICP
         </h3>
       </div>
       <div className="home">
-        <div className="left !h-fit !p-2">
-          <h1>ICP WALLET</h1>
+        <div className="left !h-fit !p-2 flex flex-col">
+          <h1 className="text-4xl text-[#ffff] font-semibold">ICP WALLET</h1>
           <div className="box !m-2">
             <h4 className="!text-base">
               Connect your wallet to start using the wallet
@@ -162,7 +162,7 @@ const Hero = () => {
             )}
           </div>
         </div>
-        <div className="right">
+        <div className="right w-">
           <img src={heroImg} alt="Wallet" />
         </div>
       </div>

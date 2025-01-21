@@ -1,3 +1,10 @@
+type Result = variant { Ok : text; Err : text };
+type UserAccount = record { "principal" : principal; balance : nat64 };
 service : {
-    "greet": (text) -> (text) query;
+  add_balance : (nat64) -> (Result);
+  add_user_wallet : (nat64) -> (principal);
+  get_all_users : () -> (vec UserAccount) query;
+  get_user_balance : (principal) -> (opt nat64) query;
+  send_balance : (principal, nat64) -> ();
+  withdraw_balance : (nat64) -> ();
 }
